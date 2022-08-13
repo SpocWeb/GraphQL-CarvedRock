@@ -1,11 +1,17 @@
-﻿using CarvedRock.Api.Data;
+﻿using System;
+using System.Security.Claims;
+using CarvedRock.Api.Data;
 using CarvedRock.Api.GraphQL;
 using CarvedRock.Api.Repositories;
 using GraphQL;
+using GraphQL.Execution;
 using GraphQL.Server;
+using GraphQL.Server.Authorization.AspNetCore;
 using GraphQL.Server.Ui.Playground;
+using GraphQL.Validation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,16 +37,35 @@ namespace CarvedRock.Api
             services.AddScoped<ProductRepository>();
             services.AddScoped<ProductReviewRepository>();
 
-            services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
+            services.AddScoped<IServiceProvider>(s => new FuncServiceProvider (s.GetRequiredService));
             services.AddScoped<CarvedRockSchema>();
             services.AddSingleton<ReviewMessageService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddGraphQL(o => { o.ExposeExceptions = _env.IsDevelopment(); })
-                .AddGraphTypes(ServiceLifetime.Scoped).AddUserContextBuilder(httpContext => httpContext.User)
+            // https://stackoverflow.com/questions/53537521/how-to-implement-authorization-using-graphql-net-at-resolver-function-level
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>()
+	        .AddAuthorization(options =>
+	        {
+	            options.AddPolicy("LoggedIn", p => p.RequireAuthenticatedUser());
+	        });
+            services.AddGraphQL(o => o.ExposeExceptions = _env.IsDevelopment())
+                .AddGraphTypes(ServiceLifetime.Scoped)
+                //.AddUserContextBuilder(ContextCreator)
                 .AddDataLoader()
                 .AddWebSockets();
 
             services.AddCors();
+        }
+
+        static ClaimsPrincipal ContextCreator(HttpContext httpContext)
+        {
+	        return httpContext.User;
+        }
+
+        static void HandleException(UnhandledExceptionContext ex)
+        {
+	        Console.Error.WriteLine(ex.ErrorMessage);
+	        ex.Exception = null!;
         }
 
         public void Configure(IApplicationBuilder app, CarvedRockDbContext dbContext)

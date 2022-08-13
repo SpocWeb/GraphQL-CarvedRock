@@ -1,17 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using CarvedRock.Api.GraphQL.Messaging;
 using CarvedRock.Web.Models;
-using GraphQL.Client;
-using GraphQL.Common.Request;
-using GraphQL.Common.Response;
-using Newtonsoft.Json;
+using GraphQL;
+using GraphQL.Client.Abstractions;
+using GraphQL.Client.Http;
 
 namespace CarvedRock.Web.Clients
 {
     public class ProductGraphClient
     {
-        private readonly GraphQLClient _client;
+        private readonly GraphQLHttpClient _client;
 
-        public ProductGraphClient(GraphQLClient client)
+        public ProductGraphClient(GraphQLHttpClient client)
         {
             _client = client;
         }
@@ -29,11 +31,12 @@ namespace CarvedRock.Web.Clients
                 }",
                 Variables = new {productId = id}
             };
-            var response = await _client.PostAsync(query);
-            return response.GetDataFieldAs<ProductModel>("product");
+            var response = await _client.SendQueryAsync<ProductModel>(query);
+            //var response = await _client.PostAsync(query);
+            return response.Data;//.GetDataFieldAs<ProductModel>("product");
         }
 
-        public async Task AddReview(ProductReviewModel review)
+        public async Task<ProductReviewModel> AddReview(ProductReviewModel review)
         {
             var query = new GraphQLRequest
             {
@@ -47,19 +50,25 @@ namespace CarvedRock.Web.Clients
                 }",
                 Variables = new { review }
             };
-            var response = await _client.PostAsync(query);
-            var reviewReturned = response.GetDataFieldAs<ProductReviewModel>("createReview");
+            //var response = await _client.PostAsync(query);
+            //var reviewReturned = response.GetDataFieldAs<ProductReviewModel>("createReview");
+            var response = await _client.SendMutationAsync<ProductReviewModel>(query);
+            return response.Data;
         }
 
-        public async Task SubscribeToUpdates()
+        public Task SubscribeToUpdates()
         {
-            var result = await _client.SendSubscribeAsync("subscription { reviewAdded { title productId } }");
-            result.OnReceive += Receive;
+	        var graphQlRequest = new GraphQLRequest("subscription { reviewAdded { title productId } }");
+
+            var result = _client.CreateSubscriptionStream<ReviewAddedMessage>(graphQlRequest);
+            result.Subscribe(Receive);
+            return Task.CompletedTask;
+            //result.FirstOrDefaultAsync().Subscribe(Receive);
         }
 
-        private void Receive(GraphQLResponse resp)
+        private void Receive(GraphQLResponse<ReviewAddedMessage> resp)
         {
-            var review = resp.Data["reviewAdded"];
+            var review = resp.Data;
         }
     }
 }

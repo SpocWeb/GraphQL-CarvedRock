@@ -3,7 +3,6 @@ using GraphQL.Types;
 
 namespace CarvedRock.Api.GraphQL.Types
 {
-    public class ProductTypeEnumType: EnumerationGraphType<ProductTypeEnum>
-    {
-    }
+    /// <summary> Need to define a <see cref="EnumerationGraphType{TEnum}"/> Subtype to use Enums in GraphQL Queries </summary>
+    public class ProductTypeEnumType: EnumerationGraphType<ProductTypeEnum> { }
 }

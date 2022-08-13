@@ -2,6 +2,7 @@
 
 namespace CarvedRock.Api.GraphQL.Types
 {
+    /// <summary> For Mutations, need to define separate Types <see cref="ProductReviewType"/> </summary>
     public class ProductReviewInputType: InputObjectGraphType
     {
         public ProductReviewInputType()
