@@ -20,7 +20,8 @@ namespace CarvedRock.Api.GraphQL
                 resolve: context =>
                 {
                     var id = context.GetArgument<int>("id");
-                    return productRepository.GetOne(id);
+                    var result = productRepository.GetOne(id).Result;
+                    return result;
                 }
             );
 
