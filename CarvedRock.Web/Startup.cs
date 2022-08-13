@@ -23,7 +23,9 @@ namespace CarvedRock.Web
         }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            //services.AddMvcCore(options => options.EnableEndpointRouting = false);
+            services.AddMvcCore(options => options.EnableEndpointRouting = false).AddRazorViewEngine();
+            services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddSingleton(t => new GraphQLHttpClient(_config["CarvedRockApiUri"]
                 //, new NewtonsoftJsonSerializer()));
                 , new SystemTextJsonSerializer()));

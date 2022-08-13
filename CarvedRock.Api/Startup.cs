@@ -7,7 +7,6 @@ using GraphQL;
 using GraphQL.Execution;
 using GraphQL.NewtonsoftJson;
 using GraphQL.Server;
-using GraphQL.Server.Authorization.AspNetCore;
 using GraphQL.Server.Ui.Playground;
 using GraphQL.SystemTextJson;
 using GraphQL.Validation;
@@ -33,6 +32,7 @@ namespace CarvedRock.Api
 
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddCors();
 			services.AddDbContext<CarvedRockDbContext>(options =>
 				options.UseSqlServer(_config["ConnectionStrings:CarvedRock"]));
 
@@ -44,26 +44,22 @@ namespace CarvedRock.Api
 			services.AddSingleton<ReviewMessageService>();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-			services.AddScoped<IGraphQLSerializer, GraphQLSerializer>();
+			//services.AddScoped<IGraphQLSerializer, GraphQLSerializer>();
 
 			// https://stackoverflow.com/questions/53537521/how-to-implement-authorization-using-graphql-net-at-resolver-function-level
-			services.AddTransient<IValidationRule, AuthorizationValidationRule>()
-				.AddAuthorization(options => { options.AddPolicy("LoggedIn", p => p.RequireAuthenticatedUser()); });
+			//services.AddTransient<IValidationRule, AuthorizationValidationRule>()
+			//	.AddAuthorization(options => { options.AddPolicy("LoggedIn", p => p.RequireAuthenticatedUser()); });
 
 			// Extensions from graphql.server.core\5.2.2
 			services.AddGraphQL(o => o.UnhandledExceptionDelegate = HandleException)
-				; /*
 				.AddGraphTypes(ServiceLifetime.Scoped)
+				.AddSystemTextJson()
 				//.AddUserContextBuilder(ContextCreator)
+				//.AddWebSockets()
 				.AddDataLoader();
-				//.AddWebSockets();
-*/
 		}
 
-		static ClaimsPrincipal ContextCreator(HttpContext httpContext)
-		{
-			return httpContext.User;
-		}
+		static ClaimsPrincipal ContextCreator(HttpContext httpContext) => httpContext.User;
 
 		static void HandleException(UnhandledExceptionContext ex)
 		{
@@ -77,7 +73,7 @@ namespace CarvedRock.Api
 				builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 			app.UseWebSockets();
 			//app.UseGraphQLWebSockets<CarvedRockSchema>("/graphql");
-			//app.UseGraphQL<CarvedRockSchema>();
+			app.UseGraphQL<CarvedRockSchema>();
 			app.UseGraphQLPlayground(new PlaygroundOptions());
 			dbContext.Seed();
 		}

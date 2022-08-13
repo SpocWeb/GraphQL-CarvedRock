@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
 using CarvedRock.Api.Data.Entities;
 using CarvedRock.Api.Repositories;
 using GraphQL.DataLoader;
@@ -24,7 +25,7 @@ namespace CarvedRock.Api.GraphQL.Types
                 "reviews",
                 resolve: context =>
                 {
-                    var user = (ClaimsPrincipal) context.UserContext;
+                    var user = (IDictionary<string, object>) context.UserContext;
                     var loader =
                         dataLoaderAccessor.Context.GetOrAddCollectionBatchLoader<int, ProductReview>(
                             "GetReviewsByProductId", reviewRepository.GetForProducts);
