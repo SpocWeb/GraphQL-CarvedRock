@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Text.Json;
 using CarvedRock.Web.Clients;
 using CarvedRock.Web.HttpClients;
-using GraphQL.Client;
-using GraphQL.Client.Abstractions;
 using GraphQL.Client.Http;
-using GraphQL.Client.Serializer.Newtonsoft;
+using GraphQL.Client.Serializer.SystemTextJson;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,7 +25,8 @@ public class Startup
 		services.AddRazorPages().AddRazorRuntimeCompilation();
 		services.AddSingleton(t => new GraphQLHttpClient(_config["CarvedRockApiUri"]
 			//, new DebugJsonSerializer(new NewtonsoftJsonSerializer())));
-			, new NewtonsoftJsonSerializer()));
+			//, new NewtonsoftJsonSerializer()));
+			, new SystemTextJsonSerializer()));
 		//.SystemTextJson.SystemTextJsonSerializer())));
 		services.AddSingleton<ProductGraphClient>();
 		services.AddHttpClient<ProductHttpClient>(o => o.BaseAddress = new Uri(_config["CarvedRockApiUri"]));
