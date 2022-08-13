@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Text;
-using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -36,7 +34,8 @@ public class DebugJsonSerializer : IGraphQLWebsocketJsonSerializer
 			stream = new MemoryStream(Encoding.UTF8.GetBytes(str));
 		}
 
-		var ret = await _WebsocketJsonSerializer.DeserializeFromUtf8StreamAsync<TResponse>(stream, cancellationToken);
+		var ret = await _WebsocketJsonSerializer
+			.DeserializeFromUtf8StreamAsync<TResponse>(stream, cancellationToken);
 		return ret;
 	}
 

@@ -32,9 +32,9 @@ namespace CarvedRock.Web.Clients
                 Variables = new {productId = id}
             };
             //var response = await _client.SendQueryAsync(query);
-            GraphQLResponse<ProductModel> response = await _client.SendQueryAsync<ProductModel>(query);
+            var response = await _client.SendQueryAsync<ProductContainer>(query);
             //var response = await _client.PostAsync(query);
-            return response.Data;//.GetDataFieldAs<ProductModel>("product");
+            return response.Data.Product;//.GetDataFieldAs<ProductModel>("product");
         }
 
         public async Task<ProductReviewModel> AddReview(ProductReviewModel review)

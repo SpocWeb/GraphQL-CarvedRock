@@ -17,6 +17,11 @@ namespace CarvedRock.Web.Models
         }
     }
 
+    public class ProductContainer
+    {
+	    public ProductModel Product { get; set; }
+    }
+
     public class ProductsContainer
     {
         public List<ProductModel> Products { get; set; }
