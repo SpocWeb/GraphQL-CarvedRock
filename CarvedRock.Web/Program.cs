@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using CarvedRock.Web.Models;
 using GraphQL;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
 
@@ -65,16 +58,16 @@ namespace CarvedRock.Web
 			}
 		}
 	}
-}")]
-		public static void TestJsonDeSerialize(string json)
+}", ExpectedResult = "shutterstock_66842440.jpg")]
+		public static string TestJsonDeSerialize(string json)
         {
 	        var options = new JsonSerializerOptions();
 	        options.PropertyNameCaseInsensitive = true;
 	        options.Converters.Add(new JsonStringEnumConverter());
 
-	        var response = JsonSerializer.Deserialize<GraphQLResponse<ProductModel>> (json, options);
+	        var response = JsonSerializer.Deserialize<GraphQLResponse<ProductContainer>> (json, options);
 
-	        Console.WriteLine($"Team.City={response.Data.Description}");
+			return response.Data.Product.PhotoFileName;
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
